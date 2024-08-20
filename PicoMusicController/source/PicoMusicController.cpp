@@ -1,14 +1,24 @@
 #include "SpotifyAPI.h"
+#include <windows.h>
 #include <iostream>
 #include <conio.h> // Not standard, will not work for all compilers
 
 #include "Serial.h"
 
 
-int main()
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+    AllocConsole();
+    freopen("CONOUT$", "w", stdout);
+    HWND consoleWindow = GetConsoleWindow();
+
+    if (consoleWindow)
+        ShowWindow(consoleWindow, SW_SHOW);
+
     SpotifyAPI spotify;
     spotify.Login();
+
+    
 
     while (!spotify.GetAvaliableDevices())
     {
@@ -16,11 +26,17 @@ int main()
         _getch();
     }
 
+   
     spotify.GetCurrentTrack();
 
-    Serial serial("COM10", 9600);
-    // TODO Send song to pico
+    // TODO check com port exists
+    Serial serial("COM10", 9600);   
 
+    if (consoleWindow)
+        ShowWindow(consoleWindow, SW_HIDE);
+    FreeConsole();
+
+    // TODO Send song to pico
     while (true)
     {
         std::string str = serial.ReadLine();
@@ -29,12 +45,15 @@ int main()
         {
             spotify.GetCurrentTrack();
             if (str == "p")
+                spotify.Previous();
+            else if (str == "pp")
                 spotify.PlayPause();
-
+            else if (str == "n")
+                spotify.Next();
+            else if (str == "s")
+                spotify.GenerateRefreshToken();
+                //spotify.Shuffle();
         }
-
-
-
     }
     return 0;
 }

@@ -1,8 +1,9 @@
 #include "Serial.h"
 
 Serial::Serial(const std::string& port, const unsigned int& rate)
-	:m_IO(), m_Serial(m_IO, port)
+	:m_IO(), m_Serial(m_IO)
 {
+    m_Serial.open(port);
 	m_Serial.set_option(asio::serial_port_base::baud_rate(rate));
 }
 

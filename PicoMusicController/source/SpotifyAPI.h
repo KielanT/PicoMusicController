@@ -19,6 +19,8 @@ public:
 	SpotifyAPI& operator=(SpotifyAPI&&) = delete; // Move assignment operator
 
 	void Login();
+	void GenerateRefreshToken();
+
 
 	bool GetAvaliableDevices();
 
@@ -33,6 +35,8 @@ public:
 	void Next();
 	void Previous();
 
+
+
 private:
 
 	//void SportifyGet(const std::string& url, const char* header = "");
@@ -40,6 +44,7 @@ private:
 	//void SportifyPost(const std::string& url, const char* header = "");
 
 	void ReadCredentials(auto& id, auto& secret);
+	void SaveCredentials();
 public:
 
 	std::string CurrentSong{ "" };
@@ -50,6 +55,7 @@ private:
 	CURL* m_Curl;
 
 	std::string m_AccessToken{ "" };
+	std::string m_RefreshToken{ "" };
 	nlohmann::json m_AccessJson{};
 
 	bool m_IsPlaying{ false };

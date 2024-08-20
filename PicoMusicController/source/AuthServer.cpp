@@ -58,6 +58,13 @@ void AuthServer::Start(const std::string& clientId, const std::string& clientSec
 	app.port(3000).multithreaded().run();
 }
 
+//void AuthServer::StartRefreshToken(const std::string& clientId, const std::string& clientSecret)
+//{
+//	crow::SimpleApp app;
+//
+//	pp.port(3000).multithreaded().run();
+//}
+
 std::string AuthServer::GenerateRandomString(size_t length)
 {
 	static const char alphanum[] =
@@ -81,7 +88,7 @@ std::string AuthServer::ExchangeCodeForToken(const std::string& code)
 {
 	CURL* curl;
 	CURLcode res;
-	std::string read_buffer;
+	std::string response_data;
 
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 	curl = curl_easy_init();
@@ -107,18 +114,18 @@ std::string AuthServer::ExchangeCodeForToken(const std::string& code)
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_fields.c_str());
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &read_buffer);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_data);
 
 	res = curl_easy_perform(curl);
 
 	if (res != CURLE_OK)
 	{
-		read_buffer = "curl_easy_perform() failed: " + std::string(curl_easy_strerror(res));
+		response_data = "curl_easy_perform() failed: " + std::string(curl_easy_strerror(res));
 	}
 
 	curl_slist_free_all(headers);
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
 
-	return read_buffer;
+	return response_data;
 }

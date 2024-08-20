@@ -4,6 +4,7 @@
 #include <fstream>
 #include <filesystem>
 
+#include "crow/utility.h"
 #include "AuthServer.h"
 
 SpotifyAPI::SpotifyAPI()
@@ -23,13 +24,70 @@ void SpotifyAPI::Login()
 	ReadCredentials(id, secret);
 
 	// TODO only do on first time
+	if (!m_RefreshToken.empty())
+	{
+		GenerateRefreshToken();
+		return;
+	}
+
 	AuthServer server;
-	server.Start(id, secret); // TODO don't hardcode 
+	server.Start(id, secret);
 
 	m_AccessJson = nlohmann::json::parse(server.AccessToken);
-	m_AccessToken = m_AccessJson["access_token"];
 
-	system("cls");
+	if (m_AccessJson.contains("access_token"))
+		m_AccessToken = m_AccessJson["access_token"];
+	if (m_AccessJson.contains("refresh_token"))
+		m_RefreshToken = m_AccessJson["refresh_token"];
+
+	SaveCredentials();
+}
+
+void SpotifyAPI::GenerateRefreshToken()
+{
+	std::string id{ "" };
+	std::string secret{ "" };
+	ReadCredentials(id, secret);
+
+	curl_easy_reset(m_Curl);
+
+	// Include client_id, client_secret, and refresh_token in POST fields
+	std::string post_fields = "grant_type=refresh_token&refresh_token=" + std::string(curl_easy_escape(m_Curl, m_RefreshToken.c_str(), m_RefreshToken.length())) +
+		"&client_id=" + curl_easy_escape(m_Curl, id.c_str(), id.length()) +
+		"&client_secret=" + curl_easy_escape(m_Curl, secret.c_str(), secret.length());
+
+	struct curl_slist* headers = nullptr;
+	headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
+
+	std::string response_data;
+	curl_easy_setopt(m_Curl, CURLOPT_URL, "https://accounts.spotify.com/api/token");
+	curl_easy_setopt(m_Curl, CURLOPT_POSTFIELDS, post_fields.c_str());
+	curl_easy_setopt(m_Curl, CURLOPT_HTTPHEADER, headers);
+	curl_easy_setopt(m_Curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+	curl_easy_setopt(m_Curl, CURLOPT_WRITEDATA, &response_data);
+	curl_easy_setopt(m_Curl, CURLOPT_VERBOSE, 1L);
+
+	CURLcode res = curl_easy_perform(m_Curl);
+	if (res == CURLE_OK)
+	{
+		m_AccessJson = nlohmann::json::parse(response_data);
+		std::cout << m_AccessJson << std::endl;
+
+		if (m_AccessJson.contains("access_token"))
+			m_AccessToken = m_AccessJson["access_token"];
+
+		if (m_AccessJson.contains("refresh_token"))
+		{
+			m_RefreshToken = m_AccessJson["refresh_token"];
+			SaveCredentials();
+		}
+	}
+	else
+	{
+		std::cerr << "Refresh request failed: " << curl_easy_strerror(res) << std::endl;
+	}
+
+	curl_slist_free_all(headers);
 }
 
 bool SpotifyAPI::GetAvaliableDevices()
@@ -56,15 +114,18 @@ bool SpotifyAPI::GetAvaliableDevices()
 	{
 		nlohmann::json json = nlohmann::json::parse(response_data);
 		
-		auto devices = json["devices"];
-		for (const auto& device : devices)
+		if(json.contains("devices"))
 		{
-			if (device["is_active"] == true)
+			auto devices = json["devices"];
+			for (const auto& device : devices)
 			{
-				isValid = true;
+				if (device["is_active"] == true)
+				{
+					isValid = true;
+				}
+				else
+					isValid = false;
 			}
-			else
-				isValid = false; 
 		}
 	}
 	else
@@ -133,20 +194,27 @@ void SpotifyAPI::GetCurrentTrack()
 	if (res == CURLE_OK && !response_data.empty())
 	{
 		nlohmann::json json = nlohmann::json::parse(response_data);
-		m_ShuffleState = json["shuffle_state"]; 
-		m_IsPlaying = json["is_playing"];
-		CurrentSong = json["item"]["name"];
+		
+		if(json.contains("shuffle_state"))
+			m_ShuffleState = json["shuffle_state"]; 
 
-		Artists.clear();
-		auto artists = json["item"]["artists"];
-		for (const auto& artist : artists)
+		if (json.contains("is_playing"))
+			m_IsPlaying = json["is_playing"];
+
+		if (json.contains("item") && json["item"].contains("name"))
 		{
-			if (!Artists.empty())
-				Artists += ", ";
+			CurrentSong = json["item"]["name"];
 
-			Artists += artist["name"];
+			Artists.clear();
+			auto artists = json["item"]["artists"];
+			for (const auto& artist : artists)
+			{
+				if (!Artists.empty())
+					Artists += ", ";
+
+				Artists += artist["name"];
+			}
 		}
-
 	}
 	else
 	{
@@ -213,7 +281,7 @@ void SpotifyAPI::Next()
 
 	if (res != CURLE_OK)
 	{
-		std::cerr << "Pause request failed: " << curl_easy_strerror(res) << std::endl;
+		std::cerr << "Next request failed: " << curl_easy_strerror(res) << std::endl;
 	}
 
 	curl_slist_free_all(headers);
@@ -249,9 +317,19 @@ void SpotifyAPI::Previous()
 
 void SpotifyAPI::ReadCredentials(auto& id, auto& secret)
 {
-	std::ifstream file("../../SpotifyDevCredentials.txt");
+	std::ifstream file;
+	file.open("../../SpotifyDevCredentials.txt");
 	getline(file, id);
 	getline(file, secret);
+	getline(file, m_RefreshToken);
+
+	file.close();
+}
+
+void SpotifyAPI::SaveCredentials()
+{
+	std::ofstream file("../../SpotifyDevCredentials.txt", std::ios::app);
+	file << "\n" << m_RefreshToken;
 
 	file.close();
 }
