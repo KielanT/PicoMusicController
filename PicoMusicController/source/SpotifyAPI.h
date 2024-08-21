@@ -28,12 +28,13 @@ public:
 
 	void GetPlaybackState(); // TODO call again with a timer when song is over
 
-	//void SetVolume(); // TODO with pico
+	void SetVolume(std::string& val); // TODO with pico
 
 	void Shuffle();
 
 	void Next();
 	void Previous();
+
 
 	void ActivateDevice();
 private:

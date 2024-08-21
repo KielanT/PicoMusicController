@@ -25,7 +25,6 @@ void SpotifyAPI::Login()
 	std::string secret{ "" };
 	ReadCredentials(id, secret);
 
-	// TODO only do on first time
 	if (!m_RefreshToken.empty())
 	{
 		GenerateRefreshToken();
@@ -101,7 +100,6 @@ bool SpotifyAPI::GetAvaliableDevices()
 {
 	bool isValid = false;
 	curl_easy_reset(m_Curl);
-
 
 	curl_easy_setopt(m_Curl, CURLOPT_URL, "https://api.spotify.com/v1/me/player/devices");
 
@@ -243,6 +241,40 @@ void SpotifyAPI::GetPlaybackState()
 	{
 		std::cerr << "request failed: " << curl_easy_strerror(res) << std::endl;
 	}
+	curl_slist_free_all(headers);
+}
+
+void SpotifyAPI::SetVolume(std::string& val)
+{
+	// TODO send and recieve json instead
+	// TODO pico only send once value as stopped changing after a time otherwise we constantly send value on the tinest of changes
+	val.erase(0, 1); // Remove v 
+
+	std::string url = "https://api.spotify.com/v1/me/player/volume?volume_percent=" + val;
+
+
+	curl_easy_reset(m_Curl);
+
+	curl_easy_setopt(m_Curl, CURLOPT_URL, url.c_str());
+
+	struct curl_slist* headers = NULL;
+	headers = curl_slist_append(headers, ("Authorization: Bearer " + m_AccessToken).c_str());
+	headers = curl_slist_append(headers, "Content-Length: 0");
+	curl_easy_setopt(m_Curl, CURLOPT_HTTPHEADER, headers);
+
+	curl_easy_setopt(m_Curl, CURLOPT_CUSTOMREQUEST, "PUT");
+
+	std::string response_data;
+	curl_easy_setopt(m_Curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+	curl_easy_setopt(m_Curl, CURLOPT_WRITEDATA, &response_data);
+
+	CURLcode res = curl_easy_perform(m_Curl);
+
+	if (res != CURLE_OK)
+	{
+		std::cerr << " request failed: " << curl_easy_strerror(res) << std::endl;
+	}
+
 	curl_slist_free_all(headers);
 }
 

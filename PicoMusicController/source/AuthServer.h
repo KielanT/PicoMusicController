@@ -14,9 +14,6 @@ public:
 	AuthServer& operator=(AuthServer&&) = delete; // Move assignment operator
 
 	void Start(const std::string& clientId, const std::string& clientSecret);
-	//void StartRefreshToken(const std::string& clientId, const std::string& clientSecret);
-
-
 
 private:
 	std::string GenerateRandomString(size_t length);

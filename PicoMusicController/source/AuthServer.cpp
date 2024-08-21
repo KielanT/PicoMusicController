@@ -54,16 +54,9 @@ void AuthServer::Start(const std::string& clientId, const std::string& clientSec
 
 	std::string url = "http://localhost:3000/login";
 	std::string command = "start " + url;
-	system(command.c_str()); // TODO make sure this always works at
+	system(command.c_str());
 	app.port(3000).multithreaded().run();
 }
-
-//void AuthServer::StartRefreshToken(const std::string& clientId, const std::string& clientSecret)
-//{
-//	crow::SimpleApp app;
-//
-//	pp.port(3000).multithreaded().run();
-//}
 
 std::string AuthServer::GenerateRandomString(size_t length)
 {
