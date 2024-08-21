@@ -26,7 +26,7 @@ public:
 
 	void PlayPause();
 
-	void GetCurrentTrack(); // TODO call again with a timer when song is over
+	void GetPlaybackState(); // TODO call again with a timer when song is over
 
 	//void SetVolume(); // TODO with pico
 
@@ -35,16 +35,17 @@ public:
 	void Next();
 	void Previous();
 
-
-
+	void ActivateDevice();
 private:
+	void StartCountdown();
+
+
+	void ReadCredentials(auto& id, auto& secret);
+	void SaveCredentials();
 
 	//void SportifyGet(const std::string& url, const char* header = "");
 	//void SportifyPut(const std::string& url, const char* header = "");
 	//void SportifyPost(const std::string& url, const char* header = "");
-
-	void ReadCredentials(auto& id, auto& secret);
-	void SaveCredentials();
 public:
 
 	std::string CurrentSong{ "" };
@@ -57,6 +58,8 @@ private:
 	std::string m_AccessToken{ "" };
 	std::string m_RefreshToken{ "" };
 	nlohmann::json m_AccessJson{};
+
+	std::string m_CurrentDeviceID{ "" };
 
 	bool m_IsPlaying{ false };
 	bool m_ShuffleState{ false };

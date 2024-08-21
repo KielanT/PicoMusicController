@@ -29,7 +29,7 @@ workspace "PicoMusicController"
 
     project "PicoMusicController"
         location "PicoMusicController"
-        kind "WindowedApp"
+        kind "ConsoleApp"
         language "C++"
         cppdialect "C++20"
         

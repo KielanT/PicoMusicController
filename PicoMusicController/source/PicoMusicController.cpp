@@ -6,19 +6,12 @@
 #include "Serial.h"
 
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int main()
 {
-    AllocConsole();
-    freopen("CONOUT$", "w", stdout);
-    HWND consoleWindow = GetConsoleWindow();
 
-    if (consoleWindow)
-        ShowWindow(consoleWindow, SW_SHOW);
 
     SpotifyAPI spotify;
     spotify.Login();
-
-    
 
     while (!spotify.GetAvaliableDevices())
     {
@@ -27,15 +20,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
    
-    spotify.GetCurrentTrack();
+    spotify.GetPlaybackState();
 
     // TODO check com port exists
     Serial serial("COM10", 9600);   
-
-    if (consoleWindow)
-        ShowWindow(consoleWindow, SW_HIDE);
-    FreeConsole();
-
     // TODO Send song to pico
     while (true)
     {
@@ -43,7 +31,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         
         if (!str.empty())
         {
-            spotify.GetCurrentTrack();
+            spotify.GetPlaybackState();
             if (str == "p")
                 spotify.Previous();
             else if (str == "pp")
@@ -51,8 +39,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             else if (str == "n")
                 spotify.Next();
             else if (str == "s")
-                spotify.GenerateRefreshToken();
-                //spotify.Shuffle();
+                spotify.Shuffle();
         }
     }
     return 0;

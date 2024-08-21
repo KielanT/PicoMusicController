@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include <chrono>
+#include <thread>
 
 #include "crow/utility.h"
 #include "AuthServer.h"
@@ -27,20 +29,24 @@ void SpotifyAPI::Login()
 	if (!m_RefreshToken.empty())
 	{
 		GenerateRefreshToken();
-		return;
+	}
+	else
+	{
+		AuthServer server;
+		server.Start(id, secret);
+
+		m_AccessJson = nlohmann::json::parse(server.AccessToken);
+
+		if (m_AccessJson.contains("access_token"))
+			m_AccessToken = m_AccessJson["access_token"];
+		if (m_AccessJson.contains("refresh_token"))
+			m_RefreshToken = m_AccessJson["refresh_token"];
+
+		SaveCredentials();
 	}
 
-	AuthServer server;
-	server.Start(id, secret);
-
-	m_AccessJson = nlohmann::json::parse(server.AccessToken);
-
-	if (m_AccessJson.contains("access_token"))
-		m_AccessToken = m_AccessJson["access_token"];
-	if (m_AccessJson.contains("refresh_token"))
-		m_RefreshToken = m_AccessJson["refresh_token"];
-
-	SaveCredentials();
+	StartCountdown();
+	
 }
 
 void SpotifyAPI::GenerateRefreshToken()
@@ -65,13 +71,11 @@ void SpotifyAPI::GenerateRefreshToken()
 	curl_easy_setopt(m_Curl, CURLOPT_HTTPHEADER, headers);
 	curl_easy_setopt(m_Curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(m_Curl, CURLOPT_WRITEDATA, &response_data);
-	curl_easy_setopt(m_Curl, CURLOPT_VERBOSE, 1L);
 
 	CURLcode res = curl_easy_perform(m_Curl);
 	if (res == CURLE_OK)
 	{
 		m_AccessJson = nlohmann::json::parse(response_data);
-		std::cout << m_AccessJson << std::endl;
 
 		if (m_AccessJson.contains("access_token"))
 			m_AccessToken = m_AccessJson["access_token"];
@@ -88,7 +92,10 @@ void SpotifyAPI::GenerateRefreshToken()
 	}
 
 	curl_slist_free_all(headers);
+
+
 }
+
 
 bool SpotifyAPI::GetAvaliableDevices()
 {
@@ -119,6 +126,7 @@ bool SpotifyAPI::GetAvaliableDevices()
 			auto devices = json["devices"];
 			for (const auto& device : devices)
 			{
+				m_CurrentDeviceID = device["id"];
 				if (device["is_active"] == true)
 				{
 					isValid = true;
@@ -172,10 +180,9 @@ void SpotifyAPI::PlayPause()
 	curl_slist_free_all(headers);
 }
 
-void SpotifyAPI::GetCurrentTrack()
+void SpotifyAPI::GetPlaybackState()
 {
 	curl_easy_reset(m_Curl);
-
 
 	curl_easy_setopt(m_Curl, CURLOPT_URL, "https://api.spotify.com/v1/me/player?market=GB");  
 
@@ -191,10 +198,26 @@ void SpotifyAPI::GetCurrentTrack()
 
 	CURLcode res = curl_easy_perform(m_Curl);
 
-	if (res == CURLE_OK && !response_data.empty())
+	if (res == CURLE_OK)
 	{
+		if (!m_CurrentDeviceID.empty() && response_data.empty())
+		{
+			curl_slist_free_all(headers);
+			ActivateDevice();
+
+			// TODO try again with this function?
+
+			return;
+		}
+
 		nlohmann::json json = nlohmann::json::parse(response_data);
 		
+		if (json.contains("device") && json["device"].contains("id"))
+		{
+			m_CurrentDeviceID = json["device"]["id"];
+		}
+		
+
 		if(json.contains("shuffle_state"))
 			m_ShuffleState = json["shuffle_state"]; 
 
@@ -315,6 +338,55 @@ void SpotifyAPI::Previous()
 	curl_slist_free_all(headers);
 }
 
+void SpotifyAPI::StartCountdown()
+{
+	auto countDownFunc = [this]()
+		{
+			while (true)
+			{
+				std::this_thread::sleep_for(std::chrono::hours(1));
+				GenerateRefreshToken();
+			}
+
+		};
+	std::thread countdownThread(countDownFunc);
+	countdownThread.detach();
+}
+
+void SpotifyAPI::ActivateDevice()
+{
+	curl_easy_reset(m_Curl);
+
+	curl_easy_setopt(m_Curl, CURLOPT_URL, "https://api.spotify.com/v1/me/player");
+
+	nlohmann::json json_payload;
+	json_payload["device_ids"] = { m_CurrentDeviceID };
+	json_payload["play"] = true;
+	m_IsPlaying = true;
+	std::string jsonData = json_payload.dump();
+
+	struct curl_slist* headers = NULL;
+	headers = curl_slist_append(headers, ("Authorization: Bearer " + m_AccessToken).c_str());
+	headers = curl_slist_append(headers, "Content-Type: application/json");
+	curl_easy_setopt(m_Curl, CURLOPT_HTTPHEADER, headers);
+
+	curl_easy_setopt(m_Curl, CURLOPT_CUSTOMREQUEST, "PUT");
+
+	curl_easy_setopt(m_Curl, CURLOPT_POSTFIELDS, jsonData.c_str());
+	std::string response_data;
+	curl_easy_setopt(m_Curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+	curl_easy_setopt(m_Curl, CURLOPT_WRITEDATA, &response_data);
+
+	CURLcode res = curl_easy_perform(m_Curl);
+	if (res != CURLE_OK)
+	{
+		std::cerr << "Device activation request failed: " << curl_easy_strerror(res) << std::endl;
+	}
+
+	curl_slist_free_all(headers);
+
+}
+
 void SpotifyAPI::ReadCredentials(auto& id, auto& secret)
 {
 	std::ifstream file;
@@ -333,6 +405,7 @@ void SpotifyAPI::SaveCredentials()
 
 	file.close();
 }
+
 
 //void SpotifyAPI::SportifyGet(const std::string& url, const char* header = "")
 //{
