@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <functional>
 #include "curl/curl.h"
 #include "json.hpp"
 
@@ -28,6 +29,8 @@ public:
 
 	void GetPlaybackState(); // TODO call again with a timer when song is over
 
+	void GetCurrentTrack(CURL* curl);
+
 	void SetVolume(std::string& val); // TODO with pico
 
 	void Shuffle();
@@ -35,6 +38,8 @@ public:
 	void Next();
 	void Previous();
 
+	void StartSongUpdateCheck(std::function<void(std::string&, std::string&)> func); // func allows the user to run code when the songs change
+	
 
 	void ActivateDevice();
 private:
@@ -50,8 +55,8 @@ private:
 public:
 
 	std::string CurrentSong{ "" };
+	std::string PreviousSong{ "" };
 	std::string Artists{ "" };
-
 
 private:
 	CURL* m_Curl;
@@ -64,5 +69,6 @@ private:
 
 	bool m_IsPlaying{ false };
 	bool m_ShuffleState{ false };
+
 	
 };

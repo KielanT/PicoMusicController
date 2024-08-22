@@ -215,12 +215,38 @@ void SpotifyAPI::GetPlaybackState()
 			m_CurrentDeviceID = json["device"]["id"];
 		}
 		
-
 		if(json.contains("shuffle_state"))
 			m_ShuffleState = json["shuffle_state"]; 
 
 		if (json.contains("is_playing"))
 			m_IsPlaying = json["is_playing"];
+	}
+	else
+	{
+		std::cerr << "request failed: " << curl_easy_strerror(res) << std::endl;
+	}
+	curl_slist_free_all(headers);
+}
+
+void SpotifyAPI::GetCurrentTrack(CURL* curl)
+{
+	curl_easy_setopt(curl, CURLOPT_URL, "https://api.spotify.com/v1/me/player/currently-playing?market=GB");
+
+	struct curl_slist* headers = NULL;
+	headers = curl_slist_append(headers, ("Authorization: Bearer " + m_AccessToken).c_str());
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+	curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+
+	std::string response_data;
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_data);
+
+	CURLcode res = curl_easy_perform(curl);
+
+	if (res == CURLE_OK && !response_data.empty())
+	{
+		nlohmann::json json = nlohmann::json::parse(response_data);
 
 		if (json.contains("item") && json["item"].contains("name"))
 		{
@@ -243,6 +269,7 @@ void SpotifyAPI::GetPlaybackState()
 	}
 	curl_slist_free_all(headers);
 }
+
 
 void SpotifyAPI::SetVolume(std::string& val)
 {
@@ -370,6 +397,36 @@ void SpotifyAPI::Previous()
 	curl_slist_free_all(headers);
 }
 
+
+void SpotifyAPI::StartSongUpdateCheck(std::function<void(std::string&, std::string&)> func)
+{
+	CURL* UpdateThreadCurl = curl_easy_init();
+
+	auto CheckUpdateFunc = [this, UpdateThreadCurl, func]()
+		{
+			while (true)
+			{
+				GetCurrentTrack(UpdateThreadCurl);
+
+				if (CurrentSong != PreviousSong)
+				{
+					func(CurrentSong, Artists);
+
+					PreviousSong = CurrentSong;
+				}
+
+				std::this_thread::sleep_for(std::chrono::seconds(2));
+			}
+
+			curl_easy_cleanup(UpdateThreadCurl);
+
+		};
+
+	std::thread SongUpdateThread(CheckUpdateFunc);
+	SongUpdateThread.detach();
+
+}
+
 void SpotifyAPI::StartCountdown()
 {
 	auto countDownFunc = [this]()
@@ -384,6 +441,7 @@ void SpotifyAPI::StartCountdown()
 	std::thread countdownThread(countDownFunc);
 	countdownThread.detach();
 }
+
 
 void SpotifyAPI::ActivateDevice()
 {

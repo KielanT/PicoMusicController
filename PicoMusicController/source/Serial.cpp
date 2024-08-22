@@ -31,3 +31,8 @@ std::string Serial::ReadLine()
     }
 }
 
+void Serial::WriteString(std::string s)
+{
+    asio::write(m_Serial, asio::buffer(s.c_str(), s.size()));
+}
+
