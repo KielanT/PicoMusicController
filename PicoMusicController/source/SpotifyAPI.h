@@ -5,14 +5,15 @@
 #include <sstream>
 #include <iomanip>
 #include <functional>
+#include <vector>
 #include "curl/curl.h"
 #include "json.hpp"
 
 class SpotifyAPI
 {
 public:
-	SpotifyAPI(); // Default constructor
-	~SpotifyAPI(); // Default destructor
+	SpotifyAPI() = default; // Default constructor
+	~SpotifyAPI() = default; // Default destructor
 
 	SpotifyAPI(const SpotifyAPI&) = delete; // Copy constructor
 	SpotifyAPI(SpotifyAPI&&) = delete; // Move constructor
@@ -29,7 +30,7 @@ public:
 
 	void GetPlaybackState(); // TODO call again with a timer when song is over
 
-	void GetCurrentTrack(CURL* curl);
+	void GetCurrentTrack();
 
 	void SetVolume(std::string& val); // TODO with pico
 
@@ -48,9 +49,9 @@ private:
 	void ReadCredentials(auto& id, auto& secret);
 	void SaveCredentials();
 
-	[[nodiscard]] std::string SpotifyGet(const std::string& url, const char* header = "");
-	//void SpotifyPut(const std::string& url, const char* header = "");
-	//void SpotifyPost(const std::string& url, const char* header = "");
+	[[nodiscard]] std::string SpotifyGET(const std::string& url);
+	[[maybe_unused]] std::string SpotifyPUT(const std::string& url, const std::vector<std::string>& headers, const std::string& postfields = ""); // TODO change headers to an array instead
+	[[maybe_unused]] std::string SpotifyPOST(const std::string& url, const std::vector<std::string>& headers, const std::string& postfields = "");
 public:
 
 	std::string CurrentSong{ "" };
@@ -58,7 +59,6 @@ public:
 	std::string Artists{ "" };
 
 private:
-	CURL* m_Curl;
 
 	std::string m_AccessToken{ "" };
 	std::string m_RefreshToken{ "" };
