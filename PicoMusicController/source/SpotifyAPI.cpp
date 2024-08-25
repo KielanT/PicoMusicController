@@ -98,26 +98,12 @@ void SpotifyAPI::GenerateRefreshToken()
 
 bool SpotifyAPI::GetAvaliableDevices()
 {
+	std::string response = SpotifyGet("https://api.spotify.com/v1/me/player/devices");
 	bool isValid = false;
-	curl_easy_reset(m_Curl);
 
-	curl_easy_setopt(m_Curl, CURLOPT_URL, "https://api.spotify.com/v1/me/player/devices");
-
-	struct curl_slist* headers = NULL;
-	headers = curl_slist_append(headers, ("Authorization: Bearer " + m_AccessToken).c_str());
-	curl_easy_setopt(m_Curl, CURLOPT_HTTPHEADER, headers);
-
-	curl_easy_setopt(m_Curl, CURLOPT_HTTPGET, 1L);
-
-	std::string response_data;
-	curl_easy_setopt(m_Curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-	curl_easy_setopt(m_Curl, CURLOPT_WRITEDATA, &response_data);
-
-	CURLcode res = curl_easy_perform(m_Curl);
-
-	if (res == CURLE_OK)
+	if (!response.empty())
 	{
-		nlohmann::json json = nlohmann::json::parse(response_data);
+		nlohmann::json json = nlohmann::json::parse(response);
 		
 		if(json.contains("devices"))
 		{
@@ -134,12 +120,6 @@ bool SpotifyAPI::GetAvaliableDevices()
 			}
 		}
 	}
-	else
-	{
-		isValid = false;
-		std::cerr << "request failed: " << curl_easy_strerror(res) << std::endl;
-	}
-	curl_slist_free_all(headers);
 
 	return isValid;
 }
@@ -152,7 +132,7 @@ void SpotifyAPI::PlayPause()
 	{
 		curl_easy_setopt(m_Curl, CURLOPT_URL, "https://api.spotify.com/v1/me/player/pause");
 	}
-	else
+	else if(!m_IsPlaying)
 	{
 		curl_easy_setopt(m_Curl, CURLOPT_URL, "https://api.spotify.com/v1/me/player/play");
 	}
@@ -180,73 +160,37 @@ void SpotifyAPI::PlayPause()
 
 void SpotifyAPI::GetPlaybackState()
 {
-	curl_easy_reset(m_Curl);
-
-	curl_easy_setopt(m_Curl, CURLOPT_URL, "https://api.spotify.com/v1/me/player?market=GB");  
-
-	struct curl_slist* headers = NULL;
-	headers = curl_slist_append(headers, ("Authorization: Bearer " + m_AccessToken).c_str());
-	curl_easy_setopt(m_Curl, CURLOPT_HTTPHEADER, headers);
-
-	curl_easy_setopt(m_Curl, CURLOPT_HTTPGET, 1L);
-
-	std::string response_data;
-	curl_easy_setopt(m_Curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-	curl_easy_setopt(m_Curl, CURLOPT_WRITEDATA, &response_data);
-
-	CURLcode res = curl_easy_perform(m_Curl);
-
-	if (res == CURLE_OK)
+	std::string response = SpotifyGet("https://api.spotify.com/v1/me/player?market=GB"); // TODO select markets
+	 
+	if (!m_CurrentDeviceID.empty() && response.empty())
 	{
-		if (!m_CurrentDeviceID.empty() && response_data.empty())
-		{
-			curl_slist_free_all(headers);
-			ActivateDevice();
+		ActivateDevice();
 
-			// TODO try again with this function?
-
-			return;
-		}
-
-		nlohmann::json json = nlohmann::json::parse(response_data);
-		
-		if (json.contains("device") && json["device"].contains("id"))
-		{
-			m_CurrentDeviceID = json["device"]["id"];
-		}
-		
-		if(json.contains("shuffle_state"))
-			m_ShuffleState = json["shuffle_state"]; 
-
-		if (json.contains("is_playing"))
-			m_IsPlaying = json["is_playing"];
+		return;
 	}
-	else
+
+	nlohmann::json json = nlohmann::json::parse(response);
+
+	if (json.contains("device") && json["device"].contains("id"))
 	{
-		std::cerr << "request failed: " << curl_easy_strerror(res) << std::endl;
+		m_CurrentDeviceID = json["device"]["id"];
 	}
-	curl_slist_free_all(headers);
+
+	if (json.contains("shuffle_state"))
+		m_ShuffleState = json["shuffle_state"];
+
+	if (json.contains("is_playing"))
+		m_IsPlaying = json["is_playing"];
 }
 
 void SpotifyAPI::GetCurrentTrack(CURL* curl)
 {
-	curl_easy_setopt(curl, CURLOPT_URL, "https://api.spotify.com/v1/me/player/currently-playing?market=GB");
+	std::string response = SpotifyGet("https://api.spotify.com/v1/me/player/currently-playing?market=GB");
 
-	struct curl_slist* headers = NULL;
-	headers = curl_slist_append(headers, ("Authorization: Bearer " + m_AccessToken).c_str());
-	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
-	curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-
-	std::string response_data;
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_data);
-
-	CURLcode res = curl_easy_perform(curl);
-
-	if (res == CURLE_OK && !response_data.empty())
+	if (!response.empty())
 	{
-		nlohmann::json json = nlohmann::json::parse(response_data);
+		nlohmann::json json = nlohmann::json::parse(response);
 
 		if (json.contains("item") && json["item"].contains("name"))
 		{
@@ -263,11 +207,6 @@ void SpotifyAPI::GetCurrentTrack(CURL* curl)
 			}
 		}
 	}
-	else
-	{
-		std::cerr << "request failed: " << curl_easy_strerror(res) << std::endl;
-	}
-	curl_slist_free_all(headers);
 }
 
 
@@ -496,16 +435,32 @@ void SpotifyAPI::SaveCredentials()
 	file.close();
 }
 
+std::string SpotifyAPI::SpotifyGet(const std::string& url, const char* header)
+{
+	// TODO check if header is needed for gets
 
-//void SpotifyAPI::SportifyGet(const std::string& url, const char* header = "")
-//{
-//	curl_easy_reset(m_Curl);
-//
-//	std::string apiUrl = "https://api.spotify.com" + url;
-//
-//	struct curl_slist* headers = NULL;
-//	headers = curl_slist_append(headers, ("Authorization: Bearer " + m_AccessToken).c_str());
-//	if(header != "")
-//		headers = curl_slist_append(headers, header);
-//
-//}
+	curl_easy_reset(m_Curl);
+
+	curl_easy_setopt(m_Curl, CURLOPT_URL, url.c_str());
+
+	struct curl_slist* headers = NULL;
+	headers = curl_slist_append(headers, ("Authorization: Bearer " + m_AccessToken).c_str());
+	curl_easy_setopt(m_Curl, CURLOPT_HTTPHEADER, headers);
+
+	curl_easy_setopt(m_Curl, CURLOPT_HTTPGET, 1L);
+
+	std::string response_data;
+	curl_easy_setopt(m_Curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+	curl_easy_setopt(m_Curl, CURLOPT_WRITEDATA, &response_data);
+
+	CURLcode res = curl_easy_perform(m_Curl);
+
+	if (res != CURLE_OK)
+	{
+		std::cerr << "request failed: " << curl_easy_strerror(res) << std::endl;
+	}
+	curl_slist_free_all(headers);
+
+	return response_data;
+}
+

@@ -45,13 +45,12 @@ public:
 private:
 	void StartCountdown();
 
-
 	void ReadCredentials(auto& id, auto& secret);
 	void SaveCredentials();
 
-	//void SportifyGet(const std::string& url, const char* header = "");
-	//void SportifyPut(const std::string& url, const char* header = "");
-	//void SportifyPost(const std::string& url, const char* header = "");
+	[[nodiscard]] std::string SpotifyGet(const std::string& url, const char* header = "");
+	//void SpotifyPut(const std::string& url, const char* header = "");
+	//void SpotifyPost(const std::string& url, const char* header = "");
 public:
 
 	std::string CurrentSong{ "" };
