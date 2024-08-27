@@ -3,6 +3,8 @@
 #include <functional>
 
 #include "SpotifyApi.h"
+#include "json.hpp"
+
 
 class SpotifyCalls
 {
@@ -52,8 +54,6 @@ public:
 	std::string Artists{ "" };
 
 private:
-	SpotifyAPI m_SpotifyAPI;
-
 	std::string m_AccessToken{ "" };
 	std::string m_RefreshToken{ "" };
 	nlohmann::json m_AccessJson{};

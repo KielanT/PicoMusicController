@@ -1,6 +1,8 @@
 #include "SpotifyCalls.h"
-#include "AuthServer.h"
 #include <fstream>
+#include <thread>
+
+#include "AuthServer.h"
 
 void SpotifyCalls::Login()
 {
@@ -45,7 +47,7 @@ bool SpotifyCalls::GetAvaliableDevices()
 	std::vector<std::string> headers;
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 
-	std::string response = m_SpotifyAPI.SpotifyGET("https://api.spotify.com/v1/me/player/devices", headers);
+	std::string response = SpotifyAPI::SpotifyGET("https://api.spotify.com/v1/me/player/devices", headers);
 	bool isValid = false;
 
 	if (!response.empty())
@@ -81,11 +83,11 @@ void SpotifyCalls::PlayPause()
 
 	if (m_IsPlaying)
 	{
-		response = m_SpotifyAPI.SpotifyPUT("https://api.spotify.com/v1/me/player/pause", headers);
+		response = SpotifyAPI::SpotifyPUT("https://api.spotify.com/v1/me/player/pause", headers);
 	}
 	else if (!m_IsPlaying)
 	{
-		response = m_SpotifyAPI.SpotifyPUT("https://api.spotify.com/v1/me/player/play", headers);
+		response = SpotifyAPI::SpotifyPUT("https://api.spotify.com/v1/me/player/play", headers);
 	}
 }
 
@@ -94,7 +96,7 @@ void SpotifyCalls::GetPlaybackState()
 	std::vector<std::string> headers;
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 
-	std::string response = m_SpotifyAPI.SpotifyGET("https://api.spotify.com/v1/me/player?market=GB", headers); // TODO select markets
+	std::string response = SpotifyAPI::SpotifyGET("https://api.spotify.com/v1/me/player?market=GB", headers); // TODO select markets
 
 	if (!m_CurrentDeviceID.empty() && response.empty())
 	{
@@ -122,7 +124,7 @@ bool SpotifyCalls::GetCurrentTrack()
 	std::vector<std::string> headers;
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 
-	std::string response = m_SpotifyAPI.SpotifyGET("https://api.spotify.com/v1/me/player/currently-playing?market=GB", headers); // TODO set markets
+	std::string response = SpotifyAPI::SpotifyGET("https://api.spotify.com/v1/me/player/currently-playing?market=GB", headers); // TODO set markets
 	bool isValid = !response.empty(); // Empty = false. Not empty = true
 
 	if (isValid)
@@ -154,7 +156,7 @@ void SpotifyCalls::SetVolume(std::string& val)
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 	headers.push_back("Content-Length: 0");
 
-	std::string response = m_SpotifyAPI.SpotifyPUT("https://api.spotify.com/v1/me/player/volume?volume_percent=" + val, headers);
+	std::string response = SpotifyAPI::SpotifyPUT("https://api.spotify.com/v1/me/player/volume?volume_percent=" + val, headers);
 }
 
 void SpotifyCalls::Shuffle()
@@ -170,11 +172,11 @@ void SpotifyCalls::Shuffle()
 
 	if (m_ShuffleState)
 	{
-		response = m_SpotifyAPI.SpotifyPUT("https://api.spotify.com/v1/me/player/shuffle?state=false", headers);
+		response = SpotifyAPI::SpotifyPUT("https://api.spotify.com/v1/me/player/shuffle?state=false", headers);
 	}
 	else
 	{
-		response = m_SpotifyAPI.SpotifyPUT("https://api.spotify.com/v1/me/player/shuffle?state=true", headers);
+		response = SpotifyAPI::SpotifyPUT("https://api.spotify.com/v1/me/player/shuffle?state=true", headers);
 	}
 }
 
@@ -184,7 +186,7 @@ void SpotifyCalls::Next()
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 	headers.push_back("Content-Length: 0");
 
-	std::string response = m_SpotifyAPI.SpotifyPOST("https://api.spotify.com/v1/me/player/next", headers);
+	std::string response = SpotifyAPI::SpotifyPOST("https://api.spotify.com/v1/me/player/next", headers);
 }
 
 void SpotifyCalls::Previous()
@@ -192,7 +194,7 @@ void SpotifyCalls::Previous()
 	std::vector<std::string> headers;
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 	headers.push_back("Content-Length: 0");
-	std::string response = m_SpotifyAPI.SpotifyPOST("https://api.spotify.com/v1/me/player/previous", headers);
+	std::string response = SpotifyAPI::SpotifyPOST("https://api.spotify.com/v1/me/player/previous", headers);
 }
 
 void SpotifyCalls::StartSongUpdateCheck(std::function<void(std::string&, std::string&)> func)
@@ -238,7 +240,7 @@ void SpotifyCalls::ActivateDevice()
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 	headers.push_back("Content-Type: application/json");
 
-	std::string response = m_SpotifyAPI.SpotifyPUT("https://api.spotify.com/v1/me/player", headers, jsonData); // Calls transfer playback
+	std::string response = SpotifyAPI::SpotifyPUT("https://api.spotify.com/v1/me/player", headers, jsonData); // Calls transfer playback
 }
 
 void SpotifyCalls::ReadCredentials(auto& id, auto& secret)
@@ -280,7 +282,7 @@ void SpotifyCalls::GenerateRefreshToken()
 	std::vector<std::string> headers;
 	headers.push_back("Content-Type: application/x-www-form-urlencoded");
 
-	std::string response = m_SpotifyAPI.SpotifyPOST("https://accounts.spotify.com/api/token", headers, postFields); // Sends a post request
+	std::string response = SpotifyAPI::SpotifyPOST("https://accounts.spotify.com/api/token", headers, postFields); // Sends a post request
 
 	if (!response.empty()) // If response is not empty 
 	{
