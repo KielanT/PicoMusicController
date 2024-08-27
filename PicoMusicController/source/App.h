@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-#include "Spotify/SpotifyAPI.h"
+#include "Spotify/SpotifyCalls.h"
 #include "Serial.h"
 
 class App
@@ -23,7 +23,7 @@ private:
 	void SendSongDataToSerial(std::string& song, std::string& artists);
 
 private:
-	SpotifyAPI m_Spotify;
+	SpotifyCalls m_Spotify;
 	Serial m_Serial{ "COM10", 9600 };
 };
 
