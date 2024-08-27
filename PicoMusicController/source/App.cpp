@@ -1,16 +1,17 @@
 #include "App.h"
 #include <iostream>
 
-#include "SpotifyAPI.h"
+#include "Spotify/SpotifyAPI.h"
 
 
 App::~App()
 {
-    // TODO send data to the pico when app close
+    m_Serial.WriteString("off"); // Tell pico screen to be on
 }
 
 void App::Init()
 {
+
     m_Spotify.Login();
 
     while (!m_Spotify.GetAvaliableDevices())
@@ -21,6 +22,7 @@ void App::Init()
         std::cin >> input;
     }
 
+    m_Serial.WriteString("on"); // Tell pico screen to be on
 
     // TODO make sure app runs in background
 
@@ -36,7 +38,7 @@ void App::Run()
 {
     while (true)
     {
-        std::string str = m_Serial.ReadLine();
+        std::string str = m_Serial.ReadLine(); // Waits until recieved 
 
         if (!str.empty())
         {
@@ -50,14 +52,17 @@ void App::Run()
             else if (str == "s")
                 m_Spotify.Shuffle();
             else if (str[0] == 'v')
+            {
+                str.erase(0, 1); // Removes the v 
                 m_Spotify.SetVolume(str);
+            }
         }
     }
 }
 
 void App::SendSongDataToSerial(std::string& song, std::string& artists)
 {
-    std::string data = song + "|" + artists + "\n";
+    std::string data = "s" + song + "|" + artists + "\n"; //  s = songdata code, for the pico to respond
 
     m_Serial.WriteString(data);
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-#include "SpotifyAPI.h"
+#include "Spotify/SpotifyAPI.h"
 #include "Serial.h"
 
 class App

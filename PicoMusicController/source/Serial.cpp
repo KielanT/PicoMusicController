@@ -1,4 +1,5 @@
 #include "Serial.h"
+#include "iostream"
 
 Serial::Serial(const std::string& port, const unsigned int& rate)
 	:m_IO(), m_Serial(m_IO)

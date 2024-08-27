@@ -6,6 +6,8 @@
 #include <iomanip>
 #include <functional>
 #include <vector>
+#include <condition_variable>
+#include <mutex>
 #include "curl/curl.h"
 #include "json.hpp"
 
@@ -28,9 +30,9 @@ public:
 
 	void PlayPause();
 
-	void GetPlaybackState(); // TODO call again with a timer when song is over
+	void GetPlaybackState();
 
-	void GetCurrentTrack();
+	[[maybe_unused]] bool GetCurrentTrack();
 
 	void SetVolume(std::string& val); // TODO with pico
 
@@ -41,17 +43,20 @@ public:
 
 	void StartSongUpdateCheck(std::function<void(std::string&, std::string&)> func); // func allows the user to run code when the songs change
 	
-
 	void ActivateDevice();
+
+	// HTTP Funcs
+	[[nodiscard]] std::string SpotifyGET(const std::string& url);
+	[[maybe_unused]] std::string SpotifyPUT(const std::string& url, const std::vector<std::string>& headers, const std::string& postfields = "");
+	[[maybe_unused]] std::string SpotifyPOST(const std::string& url, const std::vector<std::string>& headers, const std::string& postfields = "");
+
 private:
 	void StartCountdown();
 
 	void ReadCredentials(auto& id, auto& secret);
 	void SaveCredentials();
 
-	[[nodiscard]] std::string SpotifyGET(const std::string& url);
-	[[maybe_unused]] std::string SpotifyPUT(const std::string& url, const std::vector<std::string>& headers, const std::string& postfields = ""); // TODO change headers to an array instead
-	[[maybe_unused]] std::string SpotifyPOST(const std::string& url, const std::vector<std::string>& headers, const std::string& postfields = "");
+	
 public:
 
 	std::string CurrentSong{ "" };
@@ -68,6 +73,5 @@ private:
 
 	bool m_IsPlaying{ false };
 	bool m_ShuffleState{ false };
-
 	
 };

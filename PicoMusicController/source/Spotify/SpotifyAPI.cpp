@@ -149,12 +149,13 @@ void SpotifyAPI::GetPlaybackState()
 		m_IsPlaying = json["is_playing"];
 }
 
-void SpotifyAPI::GetCurrentTrack(CURL* curl)
+bool SpotifyAPI::GetCurrentTrack()
 {
-	std::string response = SpotifyGET("https://api.spotify.com/v1/me/player/currently-playing?market=GB");
+	
+	std::string response = SpotifyGET("https://api.spotify.com/v1/me/player/currently-playing?market=GB"); // TODO set markets
+	bool isValid = !response.empty(); // Empty = false. Not empty = true
 
-
-	if (!response.empty())
+	if (isValid)
 	{
 		nlohmann::json json = nlohmann::json::parse(response);
 
@@ -173,14 +174,13 @@ void SpotifyAPI::GetCurrentTrack(CURL* curl)
 			}
 		}
 	}
+
+	return isValid;
 }
 
 
 void SpotifyAPI::SetVolume(std::string& val)
 {
-	// TODO send and recieve json instead
-	// TODO pico only send once value as stopped changing after a time otherwise we constantly send value on the tinest of changes
-	val.erase(0, 1); // Removes the v 
 
 	std::vector<std::string> headers;
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
@@ -230,25 +230,29 @@ void SpotifyAPI::Previous()
 
 void SpotifyAPI::StartSongUpdateCheck(std::function<void(std::string&, std::string&)> func)
 {
-	CURL* UpdateThreadCurl = curl_easy_init();
 
-	auto CheckUpdateFunc = [this, UpdateThreadCurl, func]()
+	auto CheckUpdateFunc = [this, func]()
 		{
 			while (true)
 			{
-				GetCurrentTrack(UpdateThreadCurl);
-
-				if (CurrentSong != PreviousSong)
+				if (GetCurrentTrack()) // Returns false if in active
 				{
-					func(CurrentSong, Artists);
 
-					PreviousSong = CurrentSong;
+					if (CurrentSong != PreviousSong)
+					{
+						func(CurrentSong, Artists);
+
+						PreviousSong = CurrentSong;
+					}
+					std::this_thread::sleep_for(std::chrono::seconds(2));
 				}
-
-				std::this_thread::sleep_for(std::chrono::seconds(2));
+				else
+				{
+					std::this_thread::sleep_for(std::chrono::seconds(30));	// TODO Checks every 30 seconds if the device is no long active
+																			// Would be better to pause the thread and unpause when the device is active
+					
+				}
 			}
-
-			curl_easy_cleanup(UpdateThreadCurl);
 
 		};
 
@@ -285,7 +289,7 @@ void SpotifyAPI::ActivateDevice()
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 	headers.push_back("Content-Type: application/json");
 
-	std::string response = SpotifyPUT("https://api.spotify.com/v1/me/player", headers, jsonData);
+	std::string response = SpotifyPUT("https://api.spotify.com/v1/me/player", headers, jsonData); // Calls transfer playback
 
 }
 
