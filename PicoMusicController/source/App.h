@@ -25,6 +25,5 @@ private:
 private:
 	SpotifyAPI m_Spotify;
 	Serial m_Serial{ "COM10", 9600 };
-
 };
 

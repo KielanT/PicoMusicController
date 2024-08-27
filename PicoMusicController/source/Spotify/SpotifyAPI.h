@@ -15,6 +15,7 @@ class SpotifyAPI
 {
 public:
 	SpotifyAPI() = default; // Default constructor
+	
 	~SpotifyAPI() = default; // Default destructor
 
 	SpotifyAPI(const SpotifyAPI&) = delete; // Copy constructor
