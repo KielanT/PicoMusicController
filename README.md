@@ -1,3 +1,6 @@
+# Pico Music Controller
+![Alt text](relative%20Images/Pico Music Controller_bb.png?raw=true "Pico Circuit")
+
 # Description
 The Pico Music Controller is a project that turns a Raspberry Pi Pico (not W!) into a USB device for controlling Spotify. The Pico communicates with a desktop app to make calls to the Spotify Web API.
 
