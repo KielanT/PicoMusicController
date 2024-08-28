@@ -3,6 +3,16 @@
 #include "crow.h"
 #include "curl/curl.h"
 
+/***********************************************************************************************************
+C++ version of the code found here https://developer.spotify.com/documentation/web-api/tutorials/code-flow
+
+It is worth noting that we are using port 3000, which gets set on the developer dashboard for app where
+Client ID and Client Secret is, the ports/url must match
+
+Ideally we would use our own service for authentication instead of 
+local host
+************************************************************************************************************/
+
 void AuthServer::Start(const std::string& clientId, const std::string& clientSecret)
 {
 	m_ID = clientId;

@@ -3,10 +3,19 @@
 
 #include "curl/curl.h"
 
-class SpotifyAPI
+// Spotify web api: https://developer.spotify.com/documentation/web-api
+
+class CPPify
 {
 public:
-	// HTTP Funcs
+	
+	/***********************************************************
+	SpotifyGET function
+	Used to get data in a json format from spotify such as:
+	- Get Currently Playing track
+	- Get Ablum
+	***********************************************************/
+
 	[[nodiscard]] static std::string SpotifyGET(const std::string& url, const std::vector<std::string>& headers)
 	{
 		CURL* curl = curl_easy_init();
@@ -38,6 +47,13 @@ public:
 
 		return responseData;
 	}
+
+	/***********************************************************
+	SpotifyPUT function
+	Used to update and recieve data in spotify such as:
+	- Start/Resume Playback
+	- Update Playlist item
+	***********************************************************/
 
 	[[maybe_unused]] static std::string SpotifyPUT(const std::string& url, const std::vector<std::string>& headers, const std::string& postfields = "")
 	{
@@ -76,6 +92,13 @@ public:
 
 		return responseData;
 	}
+
+	/***********************************************************
+	SpotifyPOST function
+	Used to send data to spotify such as:
+	- Skip To Next (track)
+	- Create Playlist
+	***********************************************************/
 
 	[[maybe_unused]] static std::string SpotifyPOST(const std::string& url, const std::vector<std::string>& headers, const std::string& postfields = "")
 	{
@@ -117,7 +140,7 @@ public:
 		return responseData;
 	}
 	
-	static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* userp) // TODO move to utility header
+	static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* userp)
 	{
 		size_t total_size = size * nmemb;
 		userp->append(static_cast<char*>(contents), total_size);

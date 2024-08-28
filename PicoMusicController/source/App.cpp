@@ -1,7 +1,7 @@
 #include "App.h"
 #include <iostream>
 
-#include "Spotify/SpotifyAPI.h"
+#include "Spotify/CPPify.h"
 
 
 

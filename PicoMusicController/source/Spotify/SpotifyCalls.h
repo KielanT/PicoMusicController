@@ -2,7 +2,6 @@
 #include <string>
 #include <functional>
 
-#include "SpotifyApi.h"
 #include "json.hpp"
 
 
@@ -19,7 +18,6 @@ public:
 
 	void Login();
 
-
 	bool GetAvaliableDevices();
 
 	void PlayPause();
@@ -28,7 +26,7 @@ public:
 
 	[[maybe_unused]] bool GetCurrentTrack();
 
-	void SetVolume(std::string& val); // TODO with pico
+	void SetVolume(std::string& val);
 
 	void Shuffle();
 
@@ -36,7 +34,8 @@ public:
 
 	void Previous();
 
-	void StartSongUpdateCheck(std::function<void(std::string&, std::string&)> func); // func allows the user to run code when the songs change
+	// func allows the user to run code when the songs change
+	void StartSongUpdateCheck(std::function<void(std::string&, std::string&)> func);
 
 	void ActivateDevice();
 
@@ -46,6 +45,8 @@ private:
 
 	void GenerateRefreshToken();
 
+	// Calls generate refresh token every hour which is required for a long 
+	// running app
 	void StartCountdown();
 
 public:

@@ -4,6 +4,8 @@
 
 #include "AuthServer.h"
 
+#include "CPPify.h"
+
 void SpotifyCalls::Login()
 {
 	// Gets the client ID and Secret
@@ -24,7 +26,9 @@ void SpotifyCalls::Login()
 	}
 	else
 	{
-		AuthServer server;
+		// Starts a simple server to login in to spotify and recieve
+		// an access token and refresh token
+		AuthServer server; 
 		server.Start(id, secret);
 
 		m_AccessJson = nlohmann::json::parse(server.AccessToken);
@@ -34,6 +38,8 @@ void SpotifyCalls::Login()
 		if (m_AccessJson.contains("refresh_token"))
 			m_RefreshToken = m_AccessJson["refresh_token"];
 
+		// Saves the refresh token to obtain another one 
+		// every hour or when loading this again
 		SaveCredentials();
 	}
 
@@ -47,19 +53,21 @@ bool SpotifyCalls::GetAvaliableDevices()
 	std::vector<std::string> headers;
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 
-	std::string response = SpotifyAPI::SpotifyGET("https://api.spotify.com/v1/me/player/devices", headers);
+	std::string response = CPPify::SpotifyGET("https://api.spotify.com/v1/me/player/devices", headers);
 	bool isValid = false;
 
-	if (!response.empty())
-	{
+	if (!response.empty()) // If there is a response
+	{ 
+		// Converts the response string to a properly formatted json file
 		nlohmann::json json = nlohmann::json::parse(response);
 
-		if (json.contains("devices"))
+		if (json.contains("devices")) // Search for active devices
 		{
 			auto devices = json["devices"];
 			for (const auto& device : devices)
 			{
-				m_CurrentDeviceID = device["id"];
+				m_CurrentDeviceID = device["id"]; // Only sets one, you should store all in an array
+												  // but this is fine for my use case
 				if (device["is_active"] == true)
 				{
 					isValid = true;
@@ -75,19 +83,20 @@ bool SpotifyCalls::GetAvaliableDevices()
 
 void SpotifyCalls::PlayPause()
 {
-	std::string response{ "" };
-
 	std::vector<std::string> headers;
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 	headers.push_back("Content-Length: 0");
 
+	// If playing set false
+	// if not playing set to true
+
 	if (m_IsPlaying)
 	{
-		response = SpotifyAPI::SpotifyPUT("https://api.spotify.com/v1/me/player/pause", headers);
+		CPPify::SpotifyPUT("https://api.spotify.com/v1/me/player/pause", headers);
 	}
 	else if (!m_IsPlaying)
 	{
-		response = SpotifyAPI::SpotifyPUT("https://api.spotify.com/v1/me/player/play", headers);
+		CPPify::SpotifyPUT("https://api.spotify.com/v1/me/player/play", headers);
 	}
 }
 
@@ -96,8 +105,12 @@ void SpotifyCalls::GetPlaybackState()
 	std::vector<std::string> headers;
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 
-	std::string response = SpotifyAPI::SpotifyGET("https://api.spotify.com/v1/me/player?market=GB", headers); // TODO select markets
+	std::string response = CPPify::SpotifyGET("https://api.spotify.com/v1/me/player?market=GB", headers); // TODO select markets
 
+	// If there is not a response and there has been an active device
+	// reactivate the device
+	// then return out the function since we cannot do any of the following code
+	// with an empty string
 	if (!m_CurrentDeviceID.empty() && response.empty())
 	{
 		ActivateDevice();
@@ -124,7 +137,7 @@ bool SpotifyCalls::GetCurrentTrack()
 	std::vector<std::string> headers;
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 
-	std::string response = SpotifyAPI::SpotifyGET("https://api.spotify.com/v1/me/player/currently-playing?market=GB", headers); // TODO set markets
+	std::string response = CPPify::SpotifyGET("https://api.spotify.com/v1/me/player/currently-playing?market=GB", headers); // TODO set markets
 	bool isValid = !response.empty(); // Empty = false. Not empty = true
 
 	if (isValid)
@@ -133,9 +146,9 @@ bool SpotifyCalls::GetCurrentTrack()
 
 		if (json.contains("item") && json["item"].contains("name"))
 		{
-			CurrentSong = json["item"]["name"];
+			CurrentSong = json["item"]["name"]; // Set the current track name
 
-			Artists.clear();
+			Artists.clear(); // Clears the previous artist and repopulates 
 			auto artists = json["item"]["artists"];
 			for (const auto& artist : artists)
 			{
@@ -156,15 +169,14 @@ void SpotifyCalls::SetVolume(std::string& val)
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 	headers.push_back("Content-Length: 0");
 
-	std::string response = SpotifyAPI::SpotifyPUT("https://api.spotify.com/v1/me/player/volume?volume_percent=" + val, headers);
+	// Sets the volume by passing in the new volume to the url
+	CPPify::SpotifyPUT("https://api.spotify.com/v1/me/player/volume?volume_percent=" + val, headers);
 }
 
 void SpotifyCalls::Shuffle()
 {
 	// Updating shuffle is to be very slow / sometimes unresponsive
-	// Works fine when setting breakpoints on the SpotifyPUT functions calls in this function
-
-	std::string response{ "" };
+	// Works fine when setting breakpoints
 
 	std::vector<std::string> headers;
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
@@ -172,11 +184,11 @@ void SpotifyCalls::Shuffle()
 
 	if (m_ShuffleState)
 	{
-		response = SpotifyAPI::SpotifyPUT("https://api.spotify.com/v1/me/player/shuffle?state=false", headers);
+		CPPify::SpotifyPUT("https://api.spotify.com/v1/me/player/shuffle?state=false", headers);
 	}
 	else
 	{
-		response = SpotifyAPI::SpotifyPUT("https://api.spotify.com/v1/me/player/shuffle?state=true", headers);
+		CPPify::SpotifyPUT("https://api.spotify.com/v1/me/player/shuffle?state=true", headers);
 	}
 }
 
@@ -186,7 +198,7 @@ void SpotifyCalls::Next()
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 	headers.push_back("Content-Length: 0");
 
-	std::string response = SpotifyAPI::SpotifyPOST("https://api.spotify.com/v1/me/player/next", headers);
+	CPPify::SpotifyPOST("https://api.spotify.com/v1/me/player/next", headers);
 }
 
 void SpotifyCalls::Previous()
@@ -194,12 +206,13 @@ void SpotifyCalls::Previous()
 	std::vector<std::string> headers;
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 	headers.push_back("Content-Length: 0");
-	std::string response = SpotifyAPI::SpotifyPOST("https://api.spotify.com/v1/me/player/previous", headers);
+
+	CPPify::SpotifyPOST("https://api.spotify.com/v1/me/player/previous", headers);
 }
 
 void SpotifyCalls::StartSongUpdateCheck(std::function<void(std::string&, std::string&)> func)
 {
-	auto CheckUpdateFunc = [this, func]()
+	auto CheckUpdateFunc = [this, func]() // Lambda function
 		{
 			while (true)
 			{
@@ -208,7 +221,7 @@ void SpotifyCalls::StartSongUpdateCheck(std::function<void(std::string&, std::st
 
 					if (CurrentSong != PreviousSong)
 					{
-						func(CurrentSong, Artists);
+						func(CurrentSong, Artists); // Calls the function the user defines for when there is a track change
 
 						PreviousSong = CurrentSong;
 					}
@@ -216,7 +229,7 @@ void SpotifyCalls::StartSongUpdateCheck(std::function<void(std::string&, std::st
 				}
 				else
 				{
-					std::this_thread::sleep_for(std::chrono::seconds(30));	// TODO Checks every 30 seconds if the device is no long active
+					std::this_thread::sleep_for(std::chrono::seconds(30));	// Checks every 30 seconds if the device is no long active
 					// Would be better to pause the thread and unpause when the device is active
 
 				}
@@ -224,12 +237,17 @@ void SpotifyCalls::StartSongUpdateCheck(std::function<void(std::string&, std::st
 
 		};
 
+	// Creates a new thread to check every few seconds if the song as changed
 	std::thread SongUpdateThread(CheckUpdateFunc);
-	SongUpdateThread.detach();
+	SongUpdateThread.detach(); // Makes sure the thread runs independtly from the main thread
+							   // otherwise threads wait for each other, which we do not want in this case
 }
 
 void SpotifyCalls::ActivateDevice()
 {
+	// Data to send to spotify
+	// The device_id is the device we want to active
+	// We can tell spotify to resume with play
 	nlohmann::json json_payload;
 	json_payload["device_ids"] = { m_CurrentDeviceID };
 	json_payload["play"] = true;
@@ -240,11 +258,13 @@ void SpotifyCalls::ActivateDevice()
 	headers.push_back("Authorization: Bearer " + m_AccessToken);
 	headers.push_back("Content-Type: application/json");
 
-	std::string response = SpotifyAPI::SpotifyPUT("https://api.spotify.com/v1/me/player", headers, jsonData); // Calls transfer playback
+	CPPify::SpotifyPUT("https://api.spotify.com/v1/me/player", headers, jsonData); 
 }
 
 void SpotifyCalls::ReadCredentials(auto& id, auto& secret)
 {
+	// File is set outside of the git folder for security
+	// Use better methods when needed
 	std::ifstream file;
 	file.open("../../SpotifyDevCredentials.txt");
 	getline(file, id);
@@ -256,6 +276,9 @@ void SpotifyCalls::ReadCredentials(auto& id, auto& secret)
 
 void SpotifyCalls::SaveCredentials()
 {
+	// We only want to append the last line in the file,
+	// we know that is where the refresh token is,
+	// this saves us from looping all the way through a file
 	std::ofstream file("../../SpotifyDevCredentials.txt", std::ios::app);
 	file << "\n" << m_RefreshToken;
 
@@ -273,6 +296,8 @@ void SpotifyCalls::GenerateRefreshToken()
 
 
 	// Post field required to get a new token
+	// We use curl here to make sure that the postfields
+	// are legal
 	std::string postFields = "grant_type=refresh_token&refresh_token=" + std::string(curl_easy_escape(curl, m_RefreshToken.c_str(), m_RefreshToken.length())) +
 		"&client_id=" + curl_easy_escape(curl, id.c_str(), id.length()) +
 		"&client_secret=" + curl_easy_escape(curl, secret.c_str(), secret.length());
@@ -282,7 +307,7 @@ void SpotifyCalls::GenerateRefreshToken()
 	std::vector<std::string> headers;
 	headers.push_back("Content-Type: application/x-www-form-urlencoded");
 
-	std::string response = SpotifyAPI::SpotifyPOST("https://accounts.spotify.com/api/token", headers, postFields); // Sends a post request
+	std::string response = CPPify::SpotifyPOST("https://accounts.spotify.com/api/token", headers, postFields); // Sends a post request
 
 	if (!response.empty()) // If response is not empty 
 	{
@@ -304,6 +329,9 @@ void SpotifyCalls::GenerateRefreshToken()
 
 void SpotifyCalls::StartCountdown()
 {
+	// This function call generate refresh token every hour
+	// A access token expires every hour, so we need to use refresh token
+	// to get a new one
 	auto countDownFunc = [this]()
 		{
 			while (true)
