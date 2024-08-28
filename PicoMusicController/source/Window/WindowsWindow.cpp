@@ -92,7 +92,7 @@ LRESULT MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			if (LOWORD(lParam) == WM_LBUTTONDBLCLK)  // Double-click on the tray icon to restore
 			{
-				//ShowWindow(hwnd, SW_SHOW);
+				ShowWindow(hwnd, SW_SHOW);
 				ShowWindow(hwnd, SW_RESTORE);
 			}
 			break;

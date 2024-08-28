@@ -27,7 +27,7 @@ private:
 	void SendSongDataToSerial(std::string& song, std::string& artists);
 
 private:
-	SpotifyCalls m_Spotify;
+	SpotifyCalls m_Spotify{ m_IsAppRunning };
 	Serial m_Serial{ "COM10", 9600 };
 
 	std::unique_ptr<WindowsWindow> m_Window;

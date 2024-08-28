@@ -6,6 +6,11 @@
 
 #include "CPPify.h"
 
+SpotifyCalls::SpotifyCalls(std::atomic<bool>& isRunning)
+	: m_IsAppRunning(isRunning)
+{
+}
+
 void SpotifyCalls::Login()
 {
 	// Gets the client ID and Secret
@@ -214,7 +219,7 @@ void SpotifyCalls::StartSongUpdateCheck(std::function<void(std::string&, std::st
 {
 	auto CheckUpdateFunc = [this, func]() // Lambda function
 		{
-			while (true) // TODO set to the app running bool
+			while (m_IsAppRunning)
 			{
 				if (GetCurrentTrack()) // Returns false if in active
 				{

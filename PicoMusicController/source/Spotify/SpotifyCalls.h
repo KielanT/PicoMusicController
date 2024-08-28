@@ -8,7 +8,7 @@
 class SpotifyCalls
 {
 public:
-	SpotifyCalls() = default; // Default constructor
+	SpotifyCalls(std::atomic<bool>& isRunning); // Default constructor
 	~SpotifyCalls() = default; // Default destructor
 
 	SpotifyCalls(const SpotifyCalls&) = delete; // Copy constructor
@@ -63,5 +63,7 @@ private:
 
 	bool m_IsPlaying{ false };
 	bool m_ShuffleState{ false };
+
+	std::atomic<bool>& m_IsAppRunning;
 };
 
