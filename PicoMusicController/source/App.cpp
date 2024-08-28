@@ -11,10 +11,13 @@ App::~App()
                                  // This does not work when the app is closed 
                                  // this is because of the infinite loops
                                  // multi threading is required
+
 }
 
 void App::Init()
 {
+    m_Window = std::make_unique<WindowsWindow>(m_IsAppRunning);
+
     m_Spotify.Login();
 
     while (!m_Spotify.GetAvaliableDevices()) // Runs until there is an active device
@@ -33,20 +36,32 @@ void App::Init()
         {
             SendSongDataToSerial(song, artists);
         }); 
+
+    std::thread serialThread(&App::SerialThread, this);
+    serialThread.detach();
 }
 
 
 void App::Run()
 {
-    while (true) // Runs forever
+    while (m_IsAppRunning) // Runs forever
+    {
+        m_Window->Update();
+
+    }
+}
+
+void App::SerialThread()
+{
+    while (m_IsAppRunning.load())
     {
         std::string str = m_Serial.ReadLine(); // Waits until recieved some data
 
         if (!str.empty())
         {
             m_Spotify.GetPlaybackState(); // Makes sure that variables in SpotifyAPI are correct
-                                          // Makes sure that there is an active device, if not it will 
-                                          // activate the previous device
+            // Makes sure that there is an active device, if not it will 
+            // activate the previous device
 
             // When recieved input from pico, using the codes below
             // run the correct spotify function

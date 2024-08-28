@@ -4,6 +4,8 @@
 #include "Spotify/SpotifyCalls.h"
 #include "Serial.h"
 
+#include "Window/WindowsWindow.h"
+
 class App
 {
 public:
@@ -19,11 +21,17 @@ public:
 
 	void Run();
 
+	void SerialThread();
+
 private:
 	void SendSongDataToSerial(std::string& song, std::string& artists);
 
 private:
 	SpotifyCalls m_Spotify;
 	Serial m_Serial{ "COM10", 9600 };
+
+	std::unique_ptr<WindowsWindow> m_Window;
+	std::atomic<bool> m_IsAppRunning{ true };
+
 };
 
