@@ -17,7 +17,7 @@ std::string Serial::ReadLine()
 {
     char c;
     std::string result;
-    for (;;)
+    for (;;) // infinite loop
     {
         asio::read(m_Serial, asio::buffer(&c, 1));
         switch (c)

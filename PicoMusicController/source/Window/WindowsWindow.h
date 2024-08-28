@@ -11,10 +11,12 @@ public:
 
 	std::atomic<bool>& m_IsAppRunning;
 
+	UINT uniqueID{ 100 }; // Random
 private:
 	HINSTANCE m_HInstance = nullptr;
-
 };
+
+void MinmizeToTrayIcon(HWND hwnd, UINT id);
 
 LRESULT CALLBACK
 MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

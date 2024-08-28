@@ -29,12 +29,13 @@ workspace "PicoMusicController"
 
     project "PicoMusicController"
         location "PicoMusicController"
-        kind "ConsoleApp"
         language "C++"
         cppdialect "C++20"
         
         targetdir ("bin/" .. outputdir .. "/%{prj.name}")
         objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+        defines { "_WIN32_WINNT=0x0601" }
 
         files
         {
@@ -60,12 +61,20 @@ workspace "PicoMusicController"
             "libcurl.lib"
         }
 
+        postbuildcommands 
+        {
+            "{COPY} ../PicoMusicController/libcurl.dll %{cfg.targetdir}",
+            "{COPY} ../PicoMusicController/zlib1.dll %{cfg.targetdir}",
+        }
+
     filter "configurations:Debug"
+        kind "ConsoleApp"
         defines "_DEBUG"
         runtime "Debug"
         symbols "On"
 
     filter "configurations:Release"
-        defines "_RELEASE"
+        kind "WindowedApp"
+        defines "_RELEASE",
         runtime "Release"
         optimize "On"

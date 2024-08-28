@@ -1,6 +1,8 @@
 #include "WindowsWindow.h"
 #include <iostream>
 
+#define WM_TRAY_ICON (WM_USER + 1)
+
 WindowsWindow::WindowsWindow(std::atomic<bool>& IsRunning)
 	: m_IsAppRunning(IsRunning)
 {
@@ -54,6 +56,22 @@ int WindowsWindow::Update()
 	return (int)msg.wParam;
 }
 
+void MinmizeToTrayIcon(HWND hwnd, UINT id)
+{
+	ShowWindow(hwnd, SW_HIDE);
+
+	NOTIFYICONDATA nid = {};
+	nid.cbSize = sizeof(NOTIFYICONDATA);
+	nid.hWnd = hwnd;
+	nid.uID = id;
+	nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+	nid.uCallbackMessage = WM_TRAY_ICON;
+	nid.hIcon = LoadIcon(NULL, IDI_APPLICATION); 
+	wcscpy_s(nid.szTip, L"Pico Music Controller");
+
+	Shell_NotifyIcon(NIM_ADD, &nid);
+}
+
 LRESULT MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	
@@ -70,6 +88,21 @@ LRESULT MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		switch (msg)
 		{
+		case WM_TRAY_ICON:
+		{
+			if (LOWORD(lParam) == WM_LBUTTONDBLCLK)  // Double-click on the tray icon to restore
+			{
+				//ShowWindow(hwnd, SW_SHOW);
+				ShowWindow(hwnd, SW_RESTORE);
+			}
+			break;
+		}
+		case WM_SIZE:
+			if (wParam == SIZE_MINIMIZED)
+			{
+				MinmizeToTrayIcon(hwnd, window->uniqueID);
+			}
+			break;
 		case WM_PAINT:
 		{
 			PAINTSTRUCT ps;
@@ -78,7 +111,7 @@ LRESULT MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
 
 			EndPaint(hwnd, &ps);
-			return 0;
+			break;
 		}
 		case WM_DESTROY:
 			PostQuitMessage(0);
