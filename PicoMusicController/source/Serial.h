@@ -7,7 +7,7 @@
 class Serial
 {
 public:
-	Serial(const std::string& port, const unsigned int& rate); // Default constructor
+	Serial(const std::string& port, const unsigned int& rate, std::atomic<bool>& appRunning); // Default constructor
 	~Serial(); // Default destructor
 
 	Serial(const Serial&) = delete; // Copy constructor
@@ -22,4 +22,5 @@ public:
 private:
 	asio::io_service m_IO;
 	asio::serial_port m_Serial;
+	std::atomic<bool>& m_AppIsRunning;
 };

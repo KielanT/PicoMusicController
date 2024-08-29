@@ -16,6 +16,7 @@ App::~App()
 
 void App::Init()
 {
+    m_IsAppRunning.store(true);
     m_Window = std::make_unique<WindowsWindow>(m_IsAppRunning);
 
     m_Spotify.Login();
@@ -58,7 +59,7 @@ void App::Init()
 
 void App::Run()
 {
-    while (m_IsAppRunning) // Runs forever
+    while (m_IsAppRunning.load()) // Runs forever
     {
         m_Window->Update();
 

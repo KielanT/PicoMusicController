@@ -75,6 +75,6 @@ workspace "PicoMusicController"
 
     filter "configurations:Release"
         kind "WindowedApp"
-        defines "_RELEASE",
+        defines "_RELEASE"
         runtime "Release"
         optimize "On"

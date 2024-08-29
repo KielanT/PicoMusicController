@@ -28,7 +28,7 @@ private:
 
 private:
 	SpotifyCalls m_Spotify{ m_IsAppRunning };
-	Serial m_Serial{ "COM10", 9600 };
+	Serial m_Serial{ "COM10", 9600, m_IsAppRunning }; // TODO Move to app contructor
 
 	std::unique_ptr<WindowsWindow> m_Window;
 	std::atomic<bool> m_IsAppRunning{ true };

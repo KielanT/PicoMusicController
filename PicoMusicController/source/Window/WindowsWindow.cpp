@@ -117,7 +117,7 @@ LRESULT MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			PostQuitMessage(0);
 
 			if (window)
-				window->m_IsAppRunning = false;
+				window->m_IsAppRunning.store(false);
 
 			return 0;
 		}
