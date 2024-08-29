@@ -5,7 +5,7 @@
 # Description
 The Pico Music Controller is a project that turns a Raspberry Pi Pico (not W!) into a USB device for controlling Spotify. The Pico communicates with a desktop app to make calls to the Spotify Web API.
 
-I created this project to address some annoyances I had while using Spotify. I always use Spotify while programming, and sometimes I want to pause/play, change the song, or adjust the volume. Usually, this requires opening the Spotify app. Although my keyboard has media buttons that reduce the need to open the app, the volume button affects the entire system sound rather than just Spotify. Additionally, if I have a video playing in the background, the buttons can control that instead of Spotify. This project solves those issues and helps boost productivity.
+I created this project to address some annoyances I had while using Spotify. I always use Spotify while programming, and sometimes I want to pause/play, change the song, or adjust the volume. Usually, this requires opening the Spotify app. Although my keyboard has media buttons that reduce the need to open the app, the volume button affects the entire system sound rather than just Spotify. Additionally, if I have a video playing in the background, the media buttons can control that instead of Spotify. This project solves those issues and helps boost productivity.
 
 There are serveral branches in this project, I have explanation further down of each branch, but I have kept older versions of this project to help people to understand, what everything is doing.
 
@@ -94,10 +94,49 @@ If you wish to remove the dependencies from your repo, go into the .gitignore fi
 
 ### Build Pico binary
 
-NOTE add git clone the ssd drive into external
+1. Open vs code
+
+2. Install Raspberry Pi Pico extension
+
+3. Select on the Raspberry Pi Pico extension on the left side bar
+
+4. Create a new project
+    - Set project name to 'PicoMusicControllerUSB'
+    - Set the board type to your board, I used the normal pico
+    - Set the location to wherever you want, I have it set to the same folder as SpotifyDevCredentials.txt
+    - Set the pico-SDK to v2.0.0
+    - Move to the code generation options and select generate C++ code (do not worry about the other options)
+    - Then select create 
+
+5. Inside the newly created PicoMusicControllerUSB folder, create a folder called external
+    - Inside external run 'git clone https://github.com/Harbys/pico-ssd1306'
+
+6. You now need to navigate to the where you cloned this repo, and copy the files inside PicoMusicControllerUSB to the same folder where you created the Pico project
+    - You will be prompted to replace the files, you need to replace the files
+
+7. Compile the project
+    - You will find the compile button at the bottom right of visual studio
+    - Compile will fail the first time, this is okay just compile again
+    - If it fails again, close vs code, open again and compile, it should work
+
+8. You will find the uf2 file in the build folder
+
 
 ### Build Pico circuit
 
+Please note I am a programmer, electronics and microcontrollers is a new hobby, there is likely better ways to build this circuit!
 
+1. You can follow the circuit in the image at the top of the page. 
+
+2. I am using a 128x32 screen not a 128x64 (pictured), you may want to change this in the code, you will change this in the Display.h file
+
+3. The Pins are:
+    - Previous button: GP3 (physical pin 5)
+    - Pause/Play button: GP7 (physical pin 10)
+    - Next button: GP13 (physical pin 17)
+    - Shuffle button: GP15 (physical pin 20)
+    - Volume dial: GP27 (physical pin 37, GP27_A1)
+    - Display SCL: GP1 (physical pin 2, SCL0)
+    - Display SDA: GP0 (physical pin 1, SDA0)
 
 
