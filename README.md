@@ -10,7 +10,7 @@ I created this project to address some annoyances I had while using Spotify. I a
 There are serveral branches in this project, I have explanation further down of each branch, but I have kept older versions of this project to help people to understand, what everything is doing.
 
 ### Intructions
-1. Create a folder whereever you like.
+1. Create a folder wherever you like.
     - I have named this pico 
 
 2. Create a text file called SpotifyDevCredentials.txt
@@ -76,6 +76,8 @@ This is the most up-to-date version of the project and the one I recommend every
 I have added the Dependencies and required dll's to the repo, to simplify this step for the hobbyists. 
 If you wish to remove the dependencies from your repo, go into the .gitignore file and remove everything under the whitelist comment and add external/ to remove the cpp files
 
+1. 'git clone https://github.com/KielanT/PicoMusicController'
+2. 
 
 # Pico
 

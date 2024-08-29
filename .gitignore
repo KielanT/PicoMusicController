@@ -50,3 +50,4 @@ bin-int/
 # Whitelist
 !zlib1.dll
 !libcurl.dll
+!premake5.exe
