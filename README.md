@@ -10,28 +10,28 @@ I created this project to address some annoyances I had while using Spotify. I a
 There are serveral branches in this project, I have explanation further down of each branch, but I have kept older versions of this project to help people to understand, what everything is doing.
 
 ### Intructions
-    1. Create a folder whereever you like.
-        - I have named this pico 
+1. Create a folder whereever you like.
+    - I have named this pico 
 
-    2. Create a text file called SpotifyDevCredentials.txt
-        - The first line must be your Client ID and the second line must be your Client Secret. See the [Spotify Web Api](#Spotify-Web-Api) section below to get them
+2. Create a text file called SpotifyDevCredentials.txt
+    - The first line must be your Client ID and the second line must be your Client Secret. See the [Spotify Web Api](#Spotify-Web-Api) section below to get them
 
-    3. You can either build the binaries from source or get them from the packages.
-        - If you want to make changes to the app you can follow the build binary steps to get the source code
-        - To build the binary for the app check out the [build windows app section](#Build-Windows-App-binary)
-        - To build the binary for the pico check out the [build pico binary section](#Build-Pico-binary)
+3. You can either build the binaries from source or get them from the packages.
+    - If you want to make changes to the app you can follow the build binary steps to get the source code
+    - To build the binary for the app check out the [build windows app section](#Build-Windows-App-binary)
+    - To build the binary for the pico check out the [build pico binary section](#Build-Pico-binary)
 
-    4. Build the circuit, follow the instructions in the [Build pico circuit section](#Build Pico circuit)
+4. Build the circuit, follow the instructions in the [Build pico circuit section](#Build Pico circuit)
 
-    5. Load the .uf2 file on to the pico
+5. Load the .uf2 file on to the pico
 
-    6. Open spotify desktop app
-        - I recommend going into the settings and setting the "Close button should minmise the spotify window"
+6. Open spotify desktop app
+    - I recommend going into the settings and setting the "Close button should minmise the spotify window"
 
-    7. Run the Pico Music Controller App.exe 
-        - On first time it will prompt you to login to spotify
-        - You can minmise the window to run in the background (sends app to system tray)
-        - To close the app go to the system tray, double click the icon and close the window normally
+7. Run the Pico Music Controller App.exe 
+    - On first time it will prompt you to login to spotify
+    - You can minmise the window to run in the background (sends app to system tray)
+    - To close the app go to the system tray, double click the icon and close the window normally
 
 # Spotify Web Api
 During this project, I created a simple C++ wrapper for the Spotify Web API, which I decided to call CPPify. I've extracted the code and placed it into a separate repository for anyone who wants to use it without needing this project.
