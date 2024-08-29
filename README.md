@@ -16,7 +16,7 @@ There are serveral branches in this project, I have explanation further down of 
 2. Create a text file called SpotifyDevCredentials.txt
     - The first line must be your Client ID and the second line must be your Client Secret. See the [Spotify Web Api](#Spotify-Web-Api) section below to get them
 
-3. You can either build the binaries from source or get them from the packages.
+3. You can either build the binaries from source or get them from the Releases.
     - If you want to make changes to the app you can follow the build binary steps to get the source code
     - To build the binary for the app check out the [build windows app section](#Build-Windows-App-binary)
     - To build the binary for the pico check out the [build pico binary section](#Build-Pico-binary)
@@ -76,8 +76,14 @@ This is the most up-to-date version of the project and the one I recommend every
 I have added the Dependencies and required dll's to the repo, to simplify this step for the hobbyists. 
 If you wish to remove the dependencies from your repo, go into the .gitignore file and remove everything under the whitelist comment and add external/ to remove the cpp files
 
-1. 'git clone https://github.com/KielanT/PicoMusicController'
-2. 
+1. In the same folder you have created open cmd and run 'git clone https://github.com/KielanT/PicoMusicController'
+
+2. Run the GenProject.bat
+    - Requires visual studio to be installed
+
+3. Open the solution file (.sln)
+
+4. Build Debug or Release
 
 # Pico
 
