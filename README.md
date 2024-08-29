@@ -11,6 +11,7 @@ There are serveral branches in this project, I have explanation further down of 
 
 ### Intructions
 
+
 # Spotify Web Api
 During this project, I created a simple C++ wrapper for the Spotify Web API, which I decided to call CPPify. I've extracted the code and placed it into a separate repository for anyone who wants to use it without needing this project.
 
@@ -51,7 +52,8 @@ This is the most up-to-date version of the project and the one I recommend every
 # Build Windows App binary
 
 ### Dependencies 
-
+I have added the Dependencies and required dll's to the repo, to simplify this step for the hobbyists. 
+If you wish to remove the dependencies from your repo, go into the .gitignore file and remove everything under the whitelist comment and add external/ to remove the cpp files
 
 
 # Pico
