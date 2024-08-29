@@ -94,6 +94,7 @@ If you wish to remove the dependencies from your repo, go into the .gitignore fi
 
 ### Build Pico binary
 
+NOTE add git clone the ssd drive into external
 
 ### Build Pico circuit
 
