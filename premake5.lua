@@ -12,13 +12,13 @@ workspace "PicoMusicController"
     outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
     IncludeDir = {} 
-    IncludeDir["curl"] = "PicoMusicController/external/curl/include"
-    IncludeDir["nlohmann"] = "PicoMusicController/external/nlohmann"
-    IncludeDir["crow"] = "PicoMusicController/external/crow"
+    IncludeDir["curl"] = "PicoMusicControllerApp/external/curl/include"
+    IncludeDir["nlohmann"] = "PicoMusicControllerApp/external/nlohmann"
+    IncludeDir["crow"] = "PicoMusicControllerApp/external/crow"
 
 
     LibDir = {}
-    LibDir["curl"] = "PicoMusicController/external/curl/lib"
+    LibDir["curl"] = "PicoMusicControllerApp/external/curl/lib"
 
 
 --[[************************************************************]]
@@ -27,8 +27,8 @@ workspace "PicoMusicController"
 --[[**                                                        **]]
 --[[************************************************************]]
 
-    project "PicoMusicController"
-        location "PicoMusicController"
+    project "PicoMusicControllerApp"
+        location "PicoMusicControllerApp"
         language "C++"
         cppdialect "C++20"
         
@@ -63,8 +63,9 @@ workspace "PicoMusicController"
 
         postbuildcommands 
         {
-            "{COPY} ../PicoMusicController/libcurl.dll %{cfg.targetdir}",
-            "{COPY} ../PicoMusicController/zlib1.dll %{cfg.targetdir}",
+            "{COPY} libcurl.dll %{cfg.targetdir}",
+            "{COPY} zlib1.dll %{cfg.targetdir}",
+            "{COPY} ../../SpotifyDevCredentials.txt ../bin/",
         }
 
     filter "configurations:Debug"
