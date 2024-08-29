@@ -46,3 +46,7 @@ bin-int/
 *.exe
 *.out
 *.app
+
+# Whitelist
+!zlib1.dll
+!libcurl.dll
