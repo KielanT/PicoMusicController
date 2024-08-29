@@ -29,17 +29,17 @@ WindowsWindow::WindowsWindow(std::atomic<bool>& IsRunning)
 	int Width = R.right - R.left;
 	int Height = R.bottom - R.top;
 
-	HWND handle = CreateWindow(L"MainWnd", L"Pico Music Controller",
+	Handle = CreateWindow(L"MainWnd", L"Pico Music Controller",
 		WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, Width, Height, 0, 0, m_HInstance, this);
 
 
-	if (!handle)
+	if (!Handle)
 	{
 		std::cout << "Create Window Failed" << std::endl; 
 	}
 
-	ShowWindow(handle, SW_SHOW);
-	UpdateWindow(handle);
+	ShowWindow(Handle, SW_SHOW);
+	UpdateWindow(Handle);
 }
 
 int WindowsWindow::Update()

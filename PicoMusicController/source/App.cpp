@@ -22,10 +22,24 @@ void App::Init()
 
     while (!m_Spotify.GetAvaliableDevices()) // Runs until there is an active device
     {
+#ifdef _DEBUG
         std::cout << "No active device, press any key to try again" << std::endl;
 
         std::string input = "";
         std::cin >> input;
+#endif // _DEBUG
+
+#ifdef _RELEASE
+        int result = MessageBox(m_Window->Handle, L"Make sure Spotify is playing! Try again?", L"No Active device found!", MB_YESNO | MB_ICONERROR);
+        if (result == IDNO)
+        {
+            SendMessage(m_Window->Handle, WM_DESTROY, 0, 0);
+            return;
+        }
+
+#endif // _RELEASE
+
+        
     }
 
     m_Serial.WriteString("on"); // Tell pico screen to be on

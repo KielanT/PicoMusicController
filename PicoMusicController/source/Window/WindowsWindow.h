@@ -13,8 +13,11 @@ public:
 	std::atomic<bool>& m_IsAppRunning;
 
 	UINT uniqueID{ 100 }; // Random
+	HWND Handle;
+
 private:
 	HINSTANCE m_HInstance = nullptr;
+	
 };
 
 void MinmizeToTrayIcon(HWND hwnd, UINT id);

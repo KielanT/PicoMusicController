@@ -9,7 +9,7 @@ I created this project to address some annoyances I had while using Spotify. I a
 
 There are serveral branches in this project, I have explanation further down of each branch, but I have kept older versions of this project to help people to understand, what everything is doing.
 
-### Controls
+### Intructions
 
 # Spotify Web Api
 During this project, I created a simple C++ wrapper for the Spotify Web API, which I decided to call CPPify. I've extracted the code and placed it into a separate repository for anyone who wants to use it without needing this project.
@@ -45,6 +45,7 @@ This is the most up-to-date version of the project and the one I recommend every
 # Problems
 - There is a bug that sometimes occurs, when the Spotify desktop app becomes inactive (not being used) and then you press a button connected to the pico, it will sometimes start and pause.
 - When the potentiometer (volume dial) is on some values, the value can start to fluctuate, I have prevented this by smoothing the values and adding a threshold value on the Pico side however, this still sometimes occurs, on some values, this can be fixed by putting the volume on a different value or by changing the threshold. The problem that happens is that it starts constantly updating the volume if its on a value that fluctuates
+- When running release mode inside Visual Studio on closing app an unhandled exception is thrown
 
 
 # Build Windows App binary
