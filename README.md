@@ -65,9 +65,12 @@ This branch is from before I implemented a window, so the project runs in a cons
 This is the most up-to-date version of the project and the one I recommend everyone use. It's also the version that the release package is based on.
 
 # Problems
+In this section you will find some problems and bugs, feel free to fix them. I plan on fixing some but at this point it works fine for my needs
+
 - There is a bug that sometimes occurs, when the Spotify desktop app becomes inactive (not being used) and then you press a button connected to the pico, it will sometimes start and pause.
 - When the potentiometer (volume dial) is on some values, the value can start to fluctuate, I have prevented this by smoothing the values and adding a threshold value on the Pico side however, this still sometimes occurs, on some values, this can be fixed by putting the volume on a different value or by changing the threshold. The problem that happens is that it starts constantly updating the volume if its on a value that fluctuates
 - When running release mode inside Visual Studio on closing app an eception is thrown inside of the  Serial::ReadLine(): error = "read: The I/O operation has been aborted because of either a thread exit or an application request."
+- When running the app when the USB pico is not plugged in it will crash, this was an oversight by me. I will get to this problem
 
 
 # Build Windows App binary 
@@ -85,9 +88,12 @@ If you wish to remove the dependencies from your repo, go into the .gitignore fi
 
 4. Build Debug or Release
 
+5. You will find the .exe inside the bin folder
+
 # Pico
 
 ### Build Pico binary
+
 
 ### Build Pico circuit
 
