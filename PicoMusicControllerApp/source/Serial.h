@@ -19,6 +19,8 @@ public:
 
 	void WriteString(std::string s);
 
+	void Close();
+
 private:
 	asio::io_service m_IO;
 	asio::serial_port m_Serial;

@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <functional>
+#include <thread>
+#include <condition_variable>
 
 #include "json.hpp"
 
@@ -9,7 +11,7 @@ class SpotifyCalls
 {
 public:
 	SpotifyCalls(std::atomic<bool>& isRunning); // Default constructor
-	~SpotifyCalls() = default; // Default destructor
+	~SpotifyCalls(); // Default destructor
 
 	SpotifyCalls(const SpotifyCalls&) = delete; // Copy constructor
 	SpotifyCalls(SpotifyCalls&&) = delete; // Move constructor
@@ -65,5 +67,11 @@ private:
 	bool m_ShuffleState{ false };
 
 	std::atomic<bool>& m_IsAppRunning;
+	std::thread m_SongUpdateThread;
+
+	std::thread m_CountdownThread;
+
+	std::condition_variable m_CountdownCV;
+	std::mutex m_CountdownMutex;
 };
 

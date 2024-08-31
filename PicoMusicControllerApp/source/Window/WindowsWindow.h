@@ -8,6 +8,7 @@ class WindowsWindow
 {
 public:
 	WindowsWindow(std::atomic<bool>& IsRunning);
+	~WindowsWindow() = default;
 	int Update();
 
 	std::atomic<bool>& m_IsAppRunning;

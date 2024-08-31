@@ -4,50 +4,75 @@
 Serial::Serial(const std::string& port, const unsigned int& rate, std::atomic<bool>& appRunning)
 	:m_IO(), m_Serial(m_IO), m_AppIsRunning(appRunning)
 {
+
+
     m_Serial.open(port);
 	m_Serial.set_option(asio::serial_port_base::baud_rate(rate));
 }
 
 Serial::~Serial()
 {
-    m_Serial.close();
+
+    if (m_Serial.is_open())
+        m_Serial.close();
 }
 
 std::string Serial::ReadLine()
 {
     char c;
-    std::string result;
-    try
+    std::string result{ "" };
+    asio::steady_timer timer(m_IO);
+
+    while (m_AppIsRunning.load())
     {
-        while (m_AppIsRunning.load()) // infinite loop
+
+        if (!m_Serial.is_open())
         {
-            if (!m_Serial.is_open())
+            break;
+        }
+
+        timer.expires_after(std::chrono::milliseconds(500));
+        timer.async_wait([&](const asio::error_code& error)
             {
-                break;
-            }
-            asio::read(m_Serial, asio::buffer(&c, 1));
-            switch (c)
-            {
-            case '\r':
-                break;
-            case '\n':
-                return result;
-            default:
-                result += c;
-            }
+                if (!error && m_AppIsRunning.load())
+                {
+                    m_Serial.cancel();
+                }
+            });
+
+        asio::error_code ec;
+        asio::read(m_Serial, asio::buffer(&c, 1), ec);
+
+        timer.cancel();
+
+        if (ec == asio::error::operation_aborted)
+        {
+            break;
+        }
+
+        switch (c)
+        {
+        case '\r':
+            break;
+        case '\n':
+            return result;
+        default:
+            result += c;
         }
     }
-    catch (const std::system_error& e) 
-    {
-        std::string error = e.what();
-        std::cerr << "System error: " << e.what() << std::endl;
-        // TODO fix the issue causing the exception: "read: The I/O operation has been aborted because of either a thread exit or an application request."
-    }
- 
+
+    return result;
 }
 
 void Serial::WriteString(std::string s)
 {
     asio::write(m_Serial, asio::buffer(s.c_str(), s.size()));
+}
+
+void Serial::Close()
+{
+
+    if (m_Serial.is_open())
+        m_Serial.close();
 }
 

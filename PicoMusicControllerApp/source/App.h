@@ -17,7 +17,7 @@ public:
 	App& operator=(const App&) = delete; // Copy assignment operator
 	App& operator=(App&&) = delete; // Move assignment operator
 
-	void Init();
+	void Init(const std::string& port);
 
 	void Run();
 
@@ -27,11 +27,12 @@ private:
 	void SendSongDataToSerial(std::string& song, std::string& artists);
 
 private:
-	SpotifyCalls m_Spotify{ m_IsAppRunning };
-	Serial m_Serial{ "COM10", 9600, m_IsAppRunning }; // TODO Move to app contructor
+	std::unique_ptr<SpotifyCalls> m_Spotify;
+	std::unique_ptr<Serial> m_Serial; // TODO Move to app contructor
 
 	std::unique_ptr<WindowsWindow> m_Window;
 	std::atomic<bool> m_IsAppRunning{ true };
 
+	std::thread m_SerialThread;
 };
 

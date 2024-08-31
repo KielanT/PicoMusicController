@@ -1,6 +1,6 @@
 #include "SpotifyCalls.h"
 #include <fstream>
-#include <thread>
+
 
 #include "AuthServer.h"
 
@@ -10,6 +10,16 @@ SpotifyCalls::SpotifyCalls(std::atomic<bool>& isRunning)
 	: m_IsAppRunning(isRunning)
 {
 }
+
+SpotifyCalls::~SpotifyCalls()
+{
+	m_CountdownCV.notify_all();
+
+	m_SongUpdateThread.join();
+	m_CountdownThread.join();
+
+}
+
 
 void SpotifyCalls::Login()
 {
@@ -219,8 +229,9 @@ void SpotifyCalls::StartSongUpdateCheck(std::function<void(std::string&, std::st
 {
 	auto CheckUpdateFunc = [this, func]() // Lambda function
 		{
-			while (m_IsAppRunning)
+			while (m_IsAppRunning.load())
 			{
+
 				if (GetCurrentTrack()) // Returns false if in active
 				{
 
@@ -243,9 +254,7 @@ void SpotifyCalls::StartSongUpdateCheck(std::function<void(std::string&, std::st
 		};
 
 	// Creates a new thread to check every few seconds if the song as changed
-	std::thread SongUpdateThread(CheckUpdateFunc);
-	SongUpdateThread.detach(); // Makes sure the thread runs independtly from the main thread
-							   // otherwise threads wait for each other, which we do not want in this case
+	m_SongUpdateThread = std::thread(CheckUpdateFunc);
 }
 
 void SpotifyCalls::ActivateDevice()
@@ -339,13 +348,20 @@ void SpotifyCalls::StartCountdown()
 	// to get a new one
 	auto countDownFunc = [this]()
 		{
-			while (true)
+			std::unique_lock<std::mutex> lock(m_CountdownMutex);
+
+			while (m_IsAppRunning.load())
 			{
-				std::this_thread::sleep_for(std::chrono::hours(1));
+
+				if (m_CountdownCV.wait_for(lock, std::chrono::hours(1), [this]() { return !m_IsAppRunning.load(); }))
+				{
+					return;
+				}
+
 				GenerateRefreshToken();
 			}
 
 		};
-	std::thread countdownThread(countDownFunc);
-	countdownThread.detach();
+	m_CountdownThread = std::thread(countDownFunc);
+	
 }
