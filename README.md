@@ -32,6 +32,7 @@ There are serveral branches in this project, I have explanation further down of 
     - On first time it will prompt you to login to spotify
     - You can minmise the window to run in the background (sends app to system tray)
     - To close the app go to the system tray, double click the icon and close the window normally
+    - If your Pico COM port doesn't match with mine (COM10), then you can either change the port in the code in App.cpp or run the exe from command line with you port. you can see how this is done in the release section
 
 # Spotify Web Api
 During this project, I created a simple C++ wrapper for the Spotify Web API, which I decided to call [CPPify](https://github.com/KielanT/CPPify). I've extracted the code and placed it into a separate repository for anyone who wants to use it without needing this project.
@@ -69,7 +70,6 @@ In this section you will find some problems and bugs, feel free to fix them. I p
 
 - There is a bug that sometimes occurs, when the Spotify desktop app becomes inactive (not being used) and then you press a button connected to the pico, it will sometimes start and pause.
 - When the potentiometer (volume dial) is on some values, the value can start to fluctuate, I have prevented this by smoothing the values and adding a threshold value on the Pico side however, this still sometimes occurs, on some values, this can be fixed by putting the volume on a different value or by changing the threshold. The problem that happens is that it starts constantly updating the volume if its on a value that fluctuates
-- When running release mode inside Visual Studio on closing app an eception is thrown inside of the  Serial::ReadLine(): error = "read: The I/O operation has been aborted because of either a thread exit or an application request."
 - When running the app when the USB pico is not plugged in it will crash, this was an oversight by me. I will get to this problem
 
 
