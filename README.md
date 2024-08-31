@@ -34,7 +34,7 @@ There are serveral branches in this project, I have explanation further down of 
     - To close the app go to the system tray, double click the icon and close the window normally
 
 # Spotify Web Api
-During this project, I created a simple C++ wrapper for the Spotify Web API, which I decided to call CPPify. I've extracted the code and placed it into a separate repository for anyone who wants to use it without needing this project.
+During this project, I created a simple C++ wrapper for the Spotify Web API, which I decided to call [CPPify](https://github.com/KielanT/CPPify). I've extracted the code and placed it into a separate repository for anyone who wants to use it without needing this project.
 
 This project requires a text file named SpotifyDevCredentials.txt, which will store your Client ID and Client Secret. To obtain your Client ID and Secret, follow the instructions here: https://developer.spotify.com/documentation/web-api/concepts/apps
 
